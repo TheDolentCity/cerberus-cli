@@ -7,6 +7,7 @@ import { MissingQueryParameterError } from './errors/missing-query-parameter-err
 
 async function handler(request: Request): Promise<Response> {
   try {
+    console.log(`Executing upload feed function...`);
     // Check that feed exists
     const url = getRssUrl(request.url);
     const feed = await getRssFeed(url);
@@ -34,39 +35,20 @@ async function handler(request: Request): Promise<Response> {
         status: 500,
         statusText: error.message,
       });
+    } else {
+      console.error(error.message);
+      return new Response(null, {
+        status: 500,
+        statusText: error.message,
+      });
     }
   }
 
-  console.log(`Exiting function.`);
+  console.log(`Executed upload feed function.`);
   return new Response(null, { status: 204 });
 }
 
 Deno.serve(handler);
 
-// try {
-//   // Check that feed exists
-//   const url = getRssUrl(
-//     'www.test.com?feedUrl=https://thedolentcity.substack.com/feed'
-//   );
-//   const feed = await getRssFeed(url);
-
-//   // Save results
-//   const redis = getRedisClient();
-//   const cache = (await redis.get('feeds')) as CachedFeeds | null;
-//   const feeds = cache ?? new Map();
-//   const timestamp = Date.now();
-//   feeds.set(url, timestamp);
-//   await redis.set('feeds', feeds);
-// } catch (error) {
-//   if (error instanceof MissingQueryParameterError) {
-//     console.log(error.message);
-//   } else if (error instanceof FeedNotFoundError) {
-//     console.log(error.message);
-//   } else if (error instanceof MissingEnvironmentVariableError) {
-//     console.error(error.message);
-//   } else {
-//     console.error(error.message);
-//   }
-// }
-
-// console.log(`Exiting function.`);
+// Test API
+// http://localhost:8000/?feedUrl=https%3A%2F%2Fthedolentcity.substack.com%2Ffeed
