@@ -1,12 +1,34 @@
+import { consoleLog, consoleNewLine, consoleSeparator } from './console.ts';
+
 import { CachedFeeds } from './types.ts';
 import { MissingEnvironmentVariableError } from './errors/missing-environment-variable-error.ts';
 import { Redis } from 'npm:@upstash/redis@1.24.1';
 import { load } from 'https://deno.land/std@0.204.0/dotenv/mod.ts';
 
-// import { Redis } from 'https://deno.land/x/upstash_redis@v1.14.0/mod.ts';
+function logFeed(feed: [string, number | undefined]) {
+  if (feed && feed.length === 2) {
+    console.log(
+      `%c@ %c${feed[0]} %c> %c${feed[1]}`,
+      'color: yellow',
+      'color: white',
+      'color: yellow',
+      'color: white'
+    );
+  }
+}
+
+function logFeeds(feeds: CachedFeeds) {
+  consoleNewLine();
+  consoleSeparator();
+  Array.from(feeds)?.forEach((feed) => {
+    logFeed(feed);
+  });
+  consoleSeparator();
+  consoleNewLine();
+}
 
 export async function getRedisClient(): Promise<Redis> {
-  console.log(`Connecting to Redis...`);
+  consoleLog('Connecting to Redis......');
 
   // Get Redis environment variables
   const env = await load();
@@ -15,11 +37,9 @@ export async function getRedisClient(): Promise<Redis> {
 
   // Error if missing environment variables
   if (!redisUrl) {
-    console.log(redisUrl);
     throw new MissingEnvironmentVariableError('UPSTASH_REDIS_REST_URL');
   }
   if (!redisToken) {
-    console.log(redisToken);
     throw new MissingEnvironmentVariableError('UPSTASH_REDIS_REST_TOKEN');
   }
 
@@ -30,17 +50,22 @@ export async function getRedisClient(): Promise<Redis> {
   });
 
   // Return Redis client
-  console.log(`Redis connection established.`);
+  consoleLog('Connected to Redis');
   return redis;
 }
 
 export async function getCachedFeeds(redis: Redis): Promise<CachedFeeds> {
-  console.log('Fetching cached feeds...');
+  consoleLog('Retrieving cached feeds......');
   const json: object | null = await redis.get('feeds');
-  console.log('Retrieved cached feeds.');
-  console.log(json);
   const feeds: CachedFeeds = json ? new Map(Object.entries(json)) : new Map();
-  console.log(feeds);
+  console.log(
+    `%c? %cRetrieved %c${feeds?.size ?? 0} %ccached feeds`,
+    'color: blue',
+    'color: white',
+    'color: yellow',
+    'color: white'
+  );
+  logFeeds(feeds);
   return feeds;
 }
 
@@ -56,7 +81,7 @@ export async function addFeed(
   // Serialize the map
   const map = Object.fromEntries(feeds);
   // const serialized = JSON.stringify(map);
-  console.log('Updating cached feeds...');
-  await redis.set('feeds', map);
-  console.log('Updated cached feeds.');
+  consoleLog('Updating cached feeds......');
+  // await redis.set('feeds', map);
+  consoleLog('Updated cached feeds');
 }

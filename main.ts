@@ -1,54 +1,56 @@
 import { addFeed, getCachedFeeds, getRedisClient } from './redis.ts';
+import { consoleError, consoleHeader, consoleSeparator } from './console.ts';
 import { getRssFeed, getRssUrl } from './feed.ts';
 
 import { FeedNotFoundError } from './errors/feed-not-found-error.ts';
 import { MissingEnvironmentVariableError } from './errors/missing-environment-variable-error.ts';
-import { MissingQueryParameterError } from './errors/missing-query-parameter-error.ts';
+import { parse } from 'https://deno.land/std@0.202.0/flags/mod.ts';
 
-async function handler(request: Request): Promise<Response> {
-  try {
-    console.log(`Executing upload feed function...`);
-    // Check that feed exists
-    const url = getRssUrl(request.url);
-    const feed = await getRssFeed(url);
+async function addFeedCommand(url: string): Promise<void> {
+  // Check that feed exists
+  const feed = await getRssFeed(url);
 
-    // Cache new feed in redis
-    const redis = await getRedisClient();
-    const feeds = await getCachedFeeds(redis);
-    await addFeed(redis, feeds, url);
-  } catch (error) {
-    if (error instanceof MissingQueryParameterError) {
-      console.log(error.message);
-      return new Response(null, {
-        status: 400,
-        statusText: error.message,
-      });
-    } else if (error instanceof FeedNotFoundError) {
-      console.log(error.message);
-      return new Response(null, {
-        status: 400,
-        statusText: error.message,
-      });
-    } else if (error instanceof MissingEnvironmentVariableError) {
-      console.error(error.message);
-      return new Response(null, {
-        status: 500,
-        statusText: error.message,
-      });
-    } else {
-      console.error(error.message);
-      return new Response(null, {
-        status: 500,
-        statusText: error.message,
-      });
-    }
-  }
+  // Fetch cached feeds from redis
+  const redis = await getRedisClient();
+  const feeds = await getCachedFeeds(redis);
 
-  console.log(`Executed upload feed function.`);
-  return new Response(null, { status: 204 });
+  // Cache new feed in redis
+  await addFeed(redis, feeds, url);
 }
 
-Deno.serve(handler);
+async function main(): Promise<void> {
+  try {
+    consoleHeader('Welcome to Cerberus CLI');
+    consoleSeparator();
+
+    // Parse CLI Arguments and Flags
+    const command = Deno.args[0];
+    const flags = parse(Deno.args, {
+      string: ['feed'],
+    });
+
+    // Process commands
+    if (command === 'addFeed' && flags?.feed) {
+      await addFeedCommand(flags?.feed);
+    }
+    // Default handling of unknown commands
+    else {
+      console.log(`Unknown command '${command}'`);
+    }
+
+    consoleSeparator();
+  } catch (error) {
+    if (error instanceof FeedNotFoundError) {
+      consoleError(error.message);
+    } else if (error instanceof MissingEnvironmentVariableError) {
+      consoleError(error.message);
+    } else {
+      consoleError(error.message);
+    }
+  }
+}
+
+main();
 
 // Test API
 // http://localhost:8000/?feedUrl=https%3A%2F%2Fthedolentcity.substack.com%2Ffeed
