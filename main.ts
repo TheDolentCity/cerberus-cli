@@ -1,9 +1,9 @@
 import { addFeed, getCachedFeeds, getRedisClient } from './redis.ts';
 import { consoleError, consoleHeader, consoleSeparator } from './console.ts';
-import { getRssFeed, getRssUrl } from './feed.ts';
 
 import { FeedNotFoundError } from './errors/feed-not-found-error.ts';
 import { MissingEnvironmentVariableError } from './errors/missing-environment-variable-error.ts';
+import { getRssFeed } from './feed.ts';
 import { parse } from 'https://deno.land/std@0.202.0/flags/mod.ts';
 
 async function addFeedCommand(url: string): Promise<void> {
