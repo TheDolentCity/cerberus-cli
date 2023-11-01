@@ -4,7 +4,6 @@ import { FeedNotFoundError } from './errors/feed-not-found-error.ts';
 import { consoleLog } from './console.ts';
 
 export async function getRssFeed(feedUrl: string): Promise<FeedData> {
-  // console.log('Retrieving RSS feed...');
   consoleLog('Retrieving RSS feed......');
   const feed = await extract(feedUrl);
 

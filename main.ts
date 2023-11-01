@@ -1,4 +1,4 @@
-import { addFeed, getCachedFeeds, getRedisClient } from './redis.ts';
+import { addFeed, getRedisClient } from './redis.ts';
 import { consoleError, consoleHeader, consoleSeparator } from './console.ts';
 
 import { FeedNotFoundError } from './errors/feed-not-found-error.ts';
@@ -10,12 +10,9 @@ async function addFeedCommand(url: string): Promise<void> {
   // Check that feed exists
   const feed = await getRssFeed(url);
 
-  // Fetch cached feeds from redis
-  const redis = await getRedisClient();
-  const feeds = await getCachedFeeds(redis);
-
   // Cache new feed in redis
-  await addFeed(redis, feeds, url);
+  const redis = await getRedisClient();
+  await addFeed(redis, url);
 }
 
 async function main(): Promise<void> {
@@ -51,6 +48,3 @@ async function main(): Promise<void> {
 }
 
 main();
-
-// Test API
-// http://localhost:8000/?feedUrl=https%3A%2F%2Fthedolentcity.substack.com%2Ffeed
