@@ -1,6 +1,6 @@
-import { MissingEnvironmentVariableError } from './errors/missing-environment-variable-error.ts';
+import { MissingEnvironmentVariableError } from '../errors/missing-environment-variable-error.ts';
 import { Redis } from 'npm:@upstash/redis@1.24.1';
-import { consoleLog } from './console.ts';
+import { consoleLog } from '../console.ts';
 import { load } from 'https://deno.land/std@0.204.0/dotenv/mod.ts';
 
 export async function getRedisClient(): Promise<Redis> {
@@ -34,4 +34,10 @@ export async function addFeed(redis: Redis, feed: string) {
   consoleLog('Updating cached feeds......');
   await redis.sadd('feeds', feed);
   consoleLog('Updated cached feeds');
+}
+
+export async function removeFeed(redis: Redis, feed: string) {
+  consoleLog('Removing cached feed......');
+  await redis.srem('feeds', feed);
+  consoleLog('Removed cached feed');
 }
