@@ -1,6 +1,6 @@
 import { MissingEnvironmentVariableError } from '../errors/missing-environment-variable-error.ts';
 import { Redis } from 'npm:@upstash/redis@1.24.1';
-import { consoleLog } from '../console.ts';
+import { consoleLog } from './console.ts';
 import { load } from 'https://deno.land/std@0.204.0/dotenv/mod.ts';
 
 export async function getRedisClient(): Promise<Redis> {
