@@ -7,7 +7,7 @@ import {
   addFeedCommandValidator,
   removeFeedCommandValidator,
 } from './src/command-validators.ts';
-import { consoleError, consoleHeader, consoleSeparator } from './console.ts';
+import { consoleError, consoleHeader, consoleSeparator } from './src/console.ts';
 
 import { FeedNotFoundError } from './errors/feed-not-found-error.ts';
 import { MissingEnvironmentVariableError } from './errors/missing-environment-variable-error.ts';
